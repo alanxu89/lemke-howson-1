@@ -2,8 +2,12 @@
 // Based on paper: https://arxiv.org/abs/0811.3247
 // Code made by: Marcelo Gomes and Supervised by Guilherme Leobas and Mariana Oliveira
 
-#include <bits/stdc++.h>
-
+// #include <bits/stdc++.h>
+#include <vector>
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <random>
 using namespace std;
 
 class tableau {
@@ -37,6 +41,9 @@ public:
 	tableau(vector<vector<int> > payoffMatrix, bool isPlayer1) {
 		int rows = payoffMatrix.size();
 		int columns = payoffMatrix[0].size();
+
+		// cout << "rows: " << rows << endl;
+		// cout << "columns: " << columns << endl;
 
 		if(isPlayer1) {
 			matrix.resize(columns);
@@ -106,19 +113,30 @@ public:
 		}
 
 		//this should not happen, howevah...
-		cout << "var Unknwon " << var << endl;
+		cout << "var unknown " << var << endl;
 		exit(1);
 	}
 
 
-	vector<pair<string,int> > getEquilibrium() {
-		vector<pair<string,int> > result;
+	vector<pair<string,double> > getEquilibrium() {
+		vector<pair<string,double> > result;
+		double sum = 0.0;
+
+		cout << "equilibrium: \n";
 
 		for(int i = 0 ; i < matrix.size(); i++ ) {
 			if(matrix[i][0] > 0) {
-				result.push_back( make_pair("x"+to_string(matrix[i][0]), matrix[i][1]));
+				result.push_back( make_pair("x"+to_string((int)matrix[i][0]), matrix[i][1]));
+				sum += matrix[i][1];
 			}
 		}
+
+		for (int i=0; i<result.size(); i++){
+			cout << result[i].first << ": " << (result[i].second)/sum << ' ' << endl;
+		}
+		cout << endl;
+
+		return result;
 	}
 
 	void printTableau() {
@@ -165,6 +183,7 @@ public:
 	}
 
 	string getVariable(int row) {
+		// cout << row << ' ' << matrix[row][0] << endl;
 		string result;
 		if( (matrix[row][0]) < 0 ) {
 			result = "s" + to_string(abs((int)matrix[row][0]));
@@ -202,15 +221,28 @@ bool lemke_howson (tableau t1, tableau t2, string startPivot, long long maxItera
 
 		iterations++;
 
-		tableau *cur_tab = (t1.isMember(pivot)) ? &t1 : &t2;
+		// cout << "var_in: " << pivot << endl;
+
+		tableau *cur_tab = nullptr;
+		
+		if (t1.isMember(pivot)){
+			cur_tab = &t1;
+			// cout << "cur_tab = t1\n";
+		}
+		else {
+			cur_tab = &t2;
+			// cout << "cur_tab = t2\n";
+		}
+
 		int col_i = cur_tab->getColumn(pivot);
 		int row_i;
 
-		int minimum_ratio = 0x3f3f3f3f;
+		double minimum_ratio = 0x3f3f3f3f;
 		for (int i = 0 ; i < cur_tab->rows() ; i++ ){
 
 			if( cur_tab->getCoeficient(i,col_i) < 0 ) {
-				int ratio = -cur_tab->getCoeficient(i,1) / cur_tab->getCoeficient(i,col_i);
+				double ratio = -cur_tab->getCoeficient(i,1) / cur_tab->getCoeficient(i,col_i);
+				// cout << "ratio: " << ratio << endl;
 				if( ratio < minimum_ratio ) {
 					minimum_ratio = ratio;
 					row_i = i;
@@ -221,8 +253,13 @@ bool lemke_howson (tableau t1, tableau t2, string startPivot, long long maxItera
 		string var_out = cur_tab->getVariable(row_i);
 		int col_i_out = cur_tab->getColumn(var_out);
 
+		// cout << pivot << " [row_i] = " << row_i << " --- " << stoi(pivot.substr(1,pivot.size()-1)) << endl;
+		// cout << "var_out: " << var_out << endl << endl;
+
 		cur_tab->setCoeficient(row_i,col_i_out,-1);
-		cur_tab->setCoeficient(row_i,0, stoi(pivot.substr(1,pivot.size()-1)));
+		cur_tab->setCoeficient(row_i,0, 
+			(pivot[0] == 'x' ? 1 : -1) * stoi(pivot.substr(1,pivot.size()-1)) );
+
 		for (int j = 1 ; j < cur_tab->columns(row_i) ; j++) {
 			if(j != col_i) {
 				cur_tab->setCoeficient(row_i,j,  cur_tab->getCoeficient(row_i,j) / -cur_tab->getCoeficient(row_i,col_i));
@@ -247,6 +284,13 @@ bool lemke_howson (tableau t1, tableau t2, string startPivot, long long maxItera
 			break;
 		}
 	}
+
+	// cout << "=======\n";
+	// t1.printTableau();
+	// t1.getEquilibrium();
+	// t2.printTableau();
+	// t2.getEquilibrium();
+
 
 	return true;
 }
@@ -279,7 +323,7 @@ void readInput(vector<vector<int> > &v1, vector<vector<int> > &v2) {
 }
 
 int main() {
-	srand(time(NULL));
+	srand(time(0));
 	long long maxIterations;
 	long long iterations = 0;
 
@@ -292,13 +336,19 @@ int main() {
 	tableau t(v1,true);
 	tableau t2(v2,false);
 
+	// t.printTableau();
+	// t2.printTableau();
+
 
 	vector<string> varPool;
 	for(int i = 0 ; i < v1.size() + v1[0].size() ; i++) {
 		varPool.push_back("x" + to_string(i+1));
 	}
 
-	random_shuffle(varPool.begin(),varPool.end());
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	shuffle(varPool.begin(),varPool.end(), std::default_random_engine(seed));
+
+	cout << varPool.size() << endl;
 
 	int index = -1;
 	bool foundEquilibrium = false;
@@ -307,6 +357,7 @@ int main() {
 		auto start = std::chrono::system_clock::now();
 		
 		foundEquilibrium = lemke_howson(t,t2,varPool[index], maxIterations, iterations);
+		// foundEquilibrium = lemke_howson(t,t2,"x32", maxIterations, iterations);
 		
 		auto end = std::chrono::system_clock::now();
 		auto elapsed = end - start;
