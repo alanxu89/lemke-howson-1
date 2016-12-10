@@ -20,15 +20,15 @@ int main(int argc, char **argv) {
   ios::sync_with_stdio(false);
   srand(time(NULL));
 
-  if (argc < 5) {
+  if (argc < 6) {
     cerr << "Error! Parameters must be specified in the following way:\n";
-    cerr << "[no. of rows] [no. of columns] [min payoff] [max payoff]" << endl;
+    cerr << "[capping] [no. of rows] [no. of columns] [min payoff] [max payoff]" << endl;
     return 0;
   }
 
   stringstream ss;
   int n, m;
-  ss << argv[1] << " " << argv[2] << " " << argv[3] << " " << argv[4] << endl;
+  ss << argv[2] << " " << argv[3] << " " << argv[4] << " " << argv[5] << endl;
   ss >> n >> m >> MIN >> MAX;
 
   if (MIN > MAX) {
@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
     cerr << "Warning: minimum payoff > maximum payoff. Values were switched." << endl;
   }
 
+  cout << argv[1] << endl;
   cout << n << " " << m << endl;
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {

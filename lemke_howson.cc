@@ -2,12 +2,12 @@
 // Based on paper: https://arxiv.org/abs/0811.3247
 // Code made by: Marcelo Gomes and Supervised by Guilherme Leobas and Mariana Oliveira
 //
-#include <bits/stdc++.h>
-//#include <vector>
-//#include <algorithm>
-//#include <iostream>
-//#include <string>
-//#include <random>
+// #include <bits/stdc++.h>
+#include <vector>
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <random>
 
 using namespace std;
 
@@ -216,6 +216,7 @@ bool lemke_howson (tableau t1, tableau t2, string startPivot, long long maxItera
   string pivot = startPivot;
 
   while(true) {
+
     if(iterations + 1 > maxIterations) {
       return false;
     }
@@ -358,43 +359,36 @@ int main() {
 
   int index = -1;
   bool foundEquilibrium = false;
+  auto start = std::chrono::system_clock::now();
+  int num_iter = 0;
+  int num_index = 0;
+
   while(++index < varPool.size() && !foundEquilibrium) {
     iterations = 0;
-    auto start = std::chrono::system_clock::now();
+
+    num_index += 1;
     
     foundEquilibrium = lemke_howson(t,t2,varPool[index], maxIterations, iterations);
-    // foundEquilibrium = lemke_howson(t,t2,"x32", maxIterations, iterations);
-    
-    auto end = std::chrono::system_clock::now();
-    auto elapsed = end - start;
-    
-    if(foundEquilibrium) {
-      cout << "Solved. ";
-    } else {
-      cout << "Not Solved. ";
-    }
 
-    cout << "It took " << iterations << " in " << elapsed.count()/10000000.0 << " seconds using " << varPool[index] << " as first pivot." << endl;
+    num_iter += iterations;
+      
+    if (foundEquilibrium)
+      break;
+
+    // cout << iterations << " " << elapsed.count()/10000000.0 << " " << varPool[index] << endl;
   }
 
   if(!foundEquilibrium) {
   	iterations = 0;
-
-  	auto start = std::chrono::system_clock::now();
   	foundEquilibrium = lemke_howson(t,t2,varPool[index-1], 0x3f3f3f3f, iterations);
-    auto end = std::chrono::system_clock::now();
-    
-    auto elapsed = end - start;
-    
-    if(foundEquilibrium) {
-      cout << "Solved. ";
-    } else {
-      cout << "Not Solved. ";
-    }
 
-    cout << "It took " << iterations << " in " << elapsed.count()/10000000.0 << " seconds using " << varPool[index-1] << " as first pivot." << endl;
+    num_index += 1;
   }
+
+  auto end = std::chrono::system_clock::now();
+  auto elapsed = end - start;
   
+  cout << num_iter << ", " << num_index << ", " << elapsed.count()/10000000.0 << ", " << foundEquilibrium << endl;
   
 
   return 0;
