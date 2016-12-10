@@ -1,7 +1,7 @@
 // Lemke-Howson Algorithm - with heuristic
 // Based on paper: https://arxiv.org/abs/0811.3247
 // Code made by: Marcelo Gomes and Supervised by Guilherme Leobas and Mariana Oliveira
-
+//
 // #include <bits/stdc++.h>
 #include <vector>
 #include <algorithm>
