@@ -2,12 +2,13 @@
 // Based on paper: https://arxiv.org/abs/0811.3247
 // Code made by: Marcelo Gomes and Supervised by Guilherme Leobas and Mariana Oliveira
 //
-// #include <bits/stdc++.h>
-#include <vector>
-#include <algorithm>
-#include <iostream>
-#include <string>
-#include <random>
+#include <bits/stdc++.h>
+//#include <vector>
+//#include <algorithm>
+//#include <iostream>
+//#include <string>
+//#include <random>
+
 using namespace std;
 
 class tableau {
@@ -244,6 +245,7 @@ bool lemke_howson (tableau t1, tableau t2, string startPivot, long long maxItera
         double ratio = -cur_tab->getCoeficient(i,1) / cur_tab->getCoeficient(i,col_i);
         // cout << "ratio: " << ratio << endl;
         if( ratio < minimum_ratio ) {
+        	// cout << "minimum_ratio "  << ratio << " " << cur_tab->getCoeficient(i,0) << endl;
           minimum_ratio = ratio;
           row_i = i;
         }
@@ -252,6 +254,8 @@ bool lemke_howson (tableau t1, tableau t2, string startPivot, long long maxItera
 
     string var_out = cur_tab->getVariable(row_i);
     int col_i_out = cur_tab->getColumn(var_out);
+
+    // cur_tab->printTableau();
 
     // cout << pivot << " [row_i] = " << row_i << " --- " << stoi(pivot.substr(1,pivot.size()-1)) << endl;
     // cout << "var_out: " << var_out << endl << endl;
@@ -278,6 +282,8 @@ bool lemke_howson (tableau t1, tableau t2, string startPivot, long long maxItera
         cur_tab->setCoeficient(i,col_i,0);
       }
     }
+
+    // cur_tab->printTableau();
 
     pivot = relatedVar(var_out);
     if(pivot.substr(1,pivot.size()-1) == startPivot.substr(1,startPivot.size()-1) ) {
@@ -348,7 +354,7 @@ int main() {
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   shuffle(varPool.begin(),varPool.end(), std::default_random_engine(seed));
 
-  cout << varPool.size() << endl;
+  // cout << varPool.size() << endl;
 
   int index = -1;
   bool foundEquilibrium = false;
@@ -370,9 +376,26 @@ int main() {
 
     cout << "It took " << iterations << " in " << elapsed.count()/10000000.0 << " seconds using " << varPool[index] << " as first pivot." << endl;
   }
+
+  if(!foundEquilibrium) {
+  	iterations = 0;
+
+  	auto start = std::chrono::system_clock::now();
+  	foundEquilibrium = lemke_howson(t,t2,varPool[index-1], 0x3f3f3f3f, iterations);
+    auto end = std::chrono::system_clock::now();
+    
+    auto elapsed = end - start;
+    
+    if(foundEquilibrium) {
+      cout << "Solved. ";
+    } else {
+      cout << "Not Solved. ";
+    }
+
+    cout << "It took " << iterations << " in " << elapsed.count()/10000000.0 << " seconds using " << varPool[index-1] << " as first pivot." << endl;
+  }
   
   
 
   return 0;
 }
-
